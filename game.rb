@@ -1,10 +1,8 @@
 #!/home/braxton/.rbenv/shims/ruby
 module BoardTools
 	def update_board(col, row)
-		column = {A: 0, B: 1, C: 2}
+		column = {a: 0, b: 1, c: 2}
 		col = column[col.to_sym]
-		spot = self.board[row][col]
-		puts spot
 	  self.board[row][col] ||= true
 	end
 
@@ -21,7 +19,16 @@ module BoardTools
 			else false
 			end
 	end
+
+	def clear_board(board)
+		board.each do |row|
+			row.map! { |x| x = false }
+		end
+	end
 end
+
+
+
 
 class Player
 	include BoardTools
@@ -56,16 +63,23 @@ class MasterBoard
 		@board = [[false, false, false],
 							[false, false, false],
 							[false, false, false]]
-		@game_board = [["  ", " A", "  B", "  C"],
+		@game_board = [["  ", " a", "  b", "  c"],
 									 ["0 ", "[ ]", "[ ]", "[ ]"],
 									 ["1 ", "[ ]", "[ ]", "[ ]"],
 									 ["2 ", "[ ]", "[ ]", "[ ]"]]					
 	end
 
 	def update_display(col, row, mark)
-		column = {A: 0, B: 1, C: 2}
+		column = {a: 0, b: 1, c: 2}
 		col = column[col.to_sym]
 	  self.game_board[row+1][col+1] = "[#{mark}]"
+	end
+
+	def clear_display
+    @game_board = [["  ", " a", "  b", "  c"],
+									 ["0 ", "[ ]", "[ ]", "[ ]"],
+									 ["1 ", "[ ]", "[ ]", "[ ]"],
+									 ["2 ", "[ ]", "[ ]", "[ ]"]]	
 	end
 
 	def check_for_tie
@@ -73,7 +87,6 @@ class MasterBoard
 			row.all? { |x| x }
 		end
 	end
-
 end
 
 def play_game(player1, player2, master_board)
@@ -86,9 +99,9 @@ def play_game(player1, player2, master_board)
 		col = ''
 		row = ''
 		
-		until col.match(/[ABC]/) && col.length == 1
-			puts "#{current_player.name}, pick a column [A B C]: "
-			col = gets.chomp.upcase
+		until col.match(/[abc]/) && col.length == 1
+			puts "#{current_player.name}, pick a column [a b c]: "
+			col = gets.chomp.downcase
 		end
 		
 		until row.match(/[012]/) && row.length == 1
@@ -107,8 +120,8 @@ def play_game(player1, player2, master_board)
 		end
 		current_player == player1 ? (current_player = player2) : (current_player = player1)
 	end
-	
 	puts master_board.game_board.map { |row| row.join('') }
+	
 	if tie
 		puts "\n\nIt's a tie..."
 	else
@@ -116,7 +129,7 @@ def play_game(player1, player2, master_board)
 		current_player.win_point
 	end
 end
- 
+
 # Setup game
 puts "Welcome!"
 puts "Are you ready for a riveting game of Tic-Tac-Toe?\n\n"
@@ -127,9 +140,20 @@ player2 = Player.new(gets.chomp, 'o')
 puts "\nGood luck #{player1.name} and #{player2.name}!\n\n"
 master_board = MasterBoard.new
 
-play_game(player1, player2, master_board)
-
-puts player1
-puts player2
-
+stop = false
+until stop
+	play_game(player1, player2, master_board)
+	puts player1
+	puts player2
+	puts "\n\nWould you like to play another round? (y/n)"
+	response = gets.chomp.downcase
+	if response[0] == 'y'
+		player1.clear_board(player1.board)
+		player2.clear_board(player2.board)
+		master_board.clear_board(master_board.board)
+		master_board.clear_display
+	else
+		stop = true
+	end
+end
 
